@@ -45,6 +45,9 @@ body.in-battle #scene{cursor:none;touch-action:none;outline:none}
 @media(max-width:600px){.battle-bottom{grid-template-columns:140px minmax(130px,1fr) 95px;gap:5px;left:8px;right:8px}.minimap-wrap{width:95px;padding:5px}.minimap-wrap .hud-caption{font-size:6px}.driving-hud .ammo-hud{width:130px;padding:7px}.driving-hud .mg-hud{width:125px}.module-panel{width:140px;padding:6px}.module-layout{gap:5px}.module-panel .tank-diagram{display:none}.view-status{display:none}}
 @media(max-width:420px){.battle-bottom{grid-template-columns:140px 1fr 95px}.driving-hud{position:absolute;bottom:160px;left:50%;transform:translateX(-50%);width:140px}.touch-controls{bottom:280px}}
 #reticle>span{left:50%;width:360px;transform:translateX(-50%);white-space:nowrap;font-size:8px;letter-spacing:.4px}@media(max-width:600px){#reticle>span{width:95vw;font-size:7px;letter-spacing:0}}
+/* Direct manipulation tools stay over the model, outside the settings panel. */
+.workshop-tools{position:absolute;inset:0;pointer-events:none;z-index:4;overflow:hidden}.workshop-camera{position:absolute;top:18px;left:18px;right:18px;display:flex;gap:5px;flex-wrap:wrap;pointer-events:auto}.workshop-camera button,.workshop-selection button{background:#14231ee8;border:1px solid #6c7960;color:#e4e8d7;padding:8px 11px;font-size:11px;border-radius:4px}.workshop-camera button:hover,.workshop-selection button:hover,.workshop-selection button.active{background:#a78243;color:#fff}.workshop-selection{position:absolute;left:18px;bottom:74px;max-width:calc(100% - 36px);background:#16231fe8;border:1px solid #5f6e55;border-radius:7px;padding:12px;pointer-events:auto}.workshop-selection strong{display:block;font-size:12px;color:#f0cf8a;margin-bottom:8px}.workshop-selection>div{display:flex;flex-wrap:wrap;gap:5px}.workshop-help{position:absolute;left:18px;bottom:18px;right:18px;color:#dce7cf;background:#122019bf;padding:8px 12px;border-radius:5px;font-size:11px;line-height:1.6}.decal-gizmo{position:absolute;border:1px dashed #ffdc7d;box-shadow:0 0 0 1px #151b1590;pointer-events:none}.decal-gizmo button{position:absolute;width:15px;height:15px;padding:0;background:#ffdb79;border:2px solid #17231e;box-shadow:0 0 0 1px #ffe8ab;border-radius:3px;pointer-events:auto;touch-action:none}.decal-gizmo [data-handle=nw]{left:-8px;top:-8px;cursor:nwse-resize}.decal-gizmo [data-handle=ne]{right:-8px;top:-8px;cursor:nesw-resize}.decal-gizmo [data-handle=sw]{left:-8px;bottom:-8px;cursor:nesw-resize}.decal-gizmo [data-handle=se]{right:-8px;bottom:-8px;cursor:nwse-resize}.decal-gizmo [data-handle=rotate]{left:50%;top:-45px;transform:translateX(-50%);width:28px;height:28px;border-radius:50%;font-size:21px;line-height:20px;color:#17231e;cursor:grab}.decal-rotate-line{position:absolute;left:50%;top:-30px;height:30px;border-left:1px dashed #ffdc7d}.decal-editor.selected{background:#dfbd6520;border-color:#dfbd65;padding:12px 8px}.decal-pick{padding:0}.decal-pick img{margin:8px 0!important}.decal-editor summary{cursor:pointer;color:#c8bb96;font-size:11px;padding:9px 0}.custom-actions{position:sticky;bottom:-28px;background:#202722;padding:12px 0;margin-bottom:0!important}
+@media(max-width:720px){#workshop{grid-template-rows:56vh 44vh}.workshop-camera{top:8px;left:8px;right:8px;gap:3px}.workshop-camera button{font-size:9px;padding:6px}.workshop-selection{left:8px;bottom:45px;padding:7px}.workshop-selection strong{font-size:10px;margin-bottom:5px}.workshop-selection button{font-size:9px;padding:5px 7px}.workshop-help{left:8px;right:8px;bottom:6px;font-size:8px;line-height:1.3;padding:5px}.custom-actions{bottom:-18px}}
 </style><!-- Three.js MIT License:
 The MIT License
 
@@ -80,7 +83,7 @@ THE SOFTWARE.
 </main>
 <section id="battle" hidden><div id="battle-scene"></div><div class="battle-top"><button id="pause-button" class="hud-button">Ⅱ <span>ESC</span></button><div class="battle-score"><div class="score-row"><span class="team-blue">SPOJENCI <b id="friendly-score">1000</b></span><span id="battle-time">06:00</span><span class="team-red"><b id="enemy-score">1000</b> NEPŘÍTEL</span></div><div class="ticket-bars"><i id="friendly-bar"></i><i id="enemy-bar"></i></div><div id="zone-hud" class="zone-hud"></div></div><span class="battle-map-label" id="battle-map-label"></span></div><div id="name-tags"></div><div id="zombie-hud" hidden></div><div id="scope-overlay" class="scope-overlay" hidden><div class="scope-ticks"></div></div><div id="view-status" class="view-status"></div><button id="camera-mode-button" class="camera-mode-button">[SHIFT] 1. OSOBA</button><div id="gun-marker" hidden></div><div id="reticle"><i></i><span></span></div><div id="hit-notice" aria-live="polite"></div><div id="kill-confirmation" class="kill-confirmation" hidden><span>✦</span><strong>CÍL ZNIČEN</strong><small></small></div><div id="kill-feed" class="kill-feed"></div><div class="battle-objective" id="battle-objective">OBSAĎ A UDRŽ ZÓNY</div><div id="damage-flash"></div><div id="nuke-flash"></div><button id="nuke-button" disabled>☢ SÉRIE 0 / 5</button><div class="battle-bottom"><div class="module-panel"><div class="hud-caption"><span id="battle-tank-name"></span><span id="crew-label">POSÁDKA</span></div><div class="module-layout"><div id="tank-diagram" class="tank-diagram"><div class="track left"></div><div class="hull"><div class="engine-block"></div><div class="turret-block"><div class="gun-block"></div></div><div class="ammo-block"></div></div><div class="track right"></div></div><div id="module-bars"></div></div><div class="module-actions"><button id="repair-button">[F] Opravit</button><button id="smoke-button">[G] Kouř <span>3</span></button></div><button id="missile-button" class="missile-action" hidden>[2] RAKETA 4/4</button></div><div class="driving-hud"><div class="speed"><strong id="speed-value">0</strong><span>km/h</span></div><div class="ammo-hud"><div class="shell-icon"></div><div><strong id="ammo-name">APHE</strong><small id="reload-label">PŘIPRAVENO</small><div class="reload-track"><i id="reload-bar"></i></div></div><span id="reload-count"></span></div><div class="mg-hud"><span id="mg-status">MEZERNÍK · KULOMET</span><div><i id="mg-heat"></i></div></div><div class="key-hints"><span><kbd>W A S D</kbd> Pohyb</span><span><kbd>MYŠ</kbd> Míření</span><span><kbd>SHIFT</kbd> Zaměřovač</span><span><kbd>C</kbd> Rozhlížení</span></div></div><div class="minimap-wrap"><div class="hud-caption"><span>TAKTICKÁ MAPA</span><span id="terrain-label">TERÉN</span></div><canvas id="minimap" width="220" height="220" aria-label="Taktická mapa bojiště"></canvas></div></div><div id="respawn-panel" hidden><span class="eyebrow">STROJ VYŘAZEN</span><h2>Bitva ještě nekončí.</h2><p id="respawn-text">Připravuje se záložní tank…</p><button id="respawn-button" class="primary-button">ZPĚT DO BOJE →</button></div><div class="touch-controls"><div class="touch-pad"><button data-key="KeyW">▲</button><button data-key="KeyA">◀</button><button data-key="KeyS">▼</button><button data-key="KeyD">▶</button></div><div class="touch-aim-actions"><button id="touch-scope">ZAMĚŘOVAČ</button><button id="touch-fire">PALBA</button></div></div></section>
 <div id="modal" class="modal-backdrop" hidden><section class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title"><button id="close-modal" class="modal-close" aria-label="Zavřít">×</button><div id="modal-content"></div></section></div>
-<section id="workshop" hidden><div id="custom-preview"></div><aside><span class="eyebrow">DÍLNA / VLASTNÍ VZHLED</span><h2 id="custom-title"></h2><p>Barvy, číslo a doplňky pouze pro tvůj tank. Pravým tlačítkem otáčej náhled.</p><div id="custom-form"></div><button id="custom-reset" class="text-button">Obnovit původní vzhled</button><div class="custom-actions"><button id="custom-save" class="primary-button">ULOŽIT VZHLED</button><button id="custom-cancel" class="secondary-button">ZRUŠIT</button></div><small>Vzhled je zdarma a nemění bojové vlastnosti. Ukládá se pro každý tank zvlášť v tomto prohlížeči.</small></aside></section><div id="toast" role="status"></div>
+<section id="workshop" hidden><div id="custom-preview"></div><aside><span class="eyebrow">DÍLNA / VLASTNÍ VZHLED</span><h2 id="custom-title"></h2><p>Vyber nálepku přímo na 3D tanku. Táhni po pancíři, rohy měň velikost, horním úchytem otáčej. Pravým tlačítkem si tank prohlédni ze všech stran.</p><div id="custom-form"></div><button id="custom-reset" class="text-button">Obnovit původní vzhled</button><div class="custom-actions"><button id="custom-save" class="primary-button">ULOŽIT VZHLED</button><button id="custom-cancel" class="secondary-button">ZRUŠIT</button></div><small>Vzhled je zdarma a nemění bojové vlastnosti. Ukládá se pro každý tank zvlášť v tomto prohlížeči.</small></aside></section><div id="toast" role="status"></div>
 </div>
 <script>
 const THREE=(()=>{/**
@@ -54845,6 +54848,113 @@ function getMap(id) { return MAPS.find(m => m.id === id) || MAPS[0]; }
 
 return {NATIONS,TANKS,riverCenter,terrainHeight,surfaceHeight,terrainAt,MAPS,getTank,getMap};
 })();
+MODULES["appearance.js"]=(()=>{
+const {TANKS,getTank} = MODULES["data.js"];
+const CAMOUFLAGES=[['factory','Původní nátěr'],['plain','Jednobarevný'],['patches','Skvrnitý'],['stripes','Pruhovaný'],['digital','Digitální']];
+const MAX_DECAL_LENGTH=120000;
+function normalizeDecal(value){return typeof value==='string'&&value.length<=MAX_DECAL_LENGTH&&/^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)?value:'';}
+function importTankImage(file){return (async()=>{
+ if(!file||file.size>20*1024*1024)throw Error('Vyber obrázek do 20 MB.');
+ const url=URL.createObjectURL(file),img=new Image();
+ try{
+  img.src=url;await img.decode();
+  if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>40000000)throw Error('Obrázek je příliš velký. Použij nejvýše 40 megapixelů.');
+  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
+  for(let size=512;size>=64;size/=2){
+   canvas.width=canvas.height=size;const scale=size/Math.max(img.naturalWidth,img.naturalHeight),w=img.naturalWidth*scale,h=img.naturalHeight*scale;
+   ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
+   const data=canvas.toDataURL('image/webp',.85);if(data.length<=24000&&normalizeDecal(data))return data;
+  }
+  throw Error('Obrázek se nepodařilo zmenšit. Zkus jiný soubor.');
+ }finally{URL.revokeObjectURL(url);}
+})();}
+const DECAL_SURFACES=[['turret-right','Věž · pravý bok'],['turret-left','Věž · levý bok'],['turret-back','Věž · zadní strana'],['hull-right','Korba · pravý bok'],['hull-left','Korba · levý bok'],['hull-front','Korba · čelo'],['hull-back','Korba · záď'],['turret-top','Věž · střecha'],['hull-top','Korba · horní plocha']];
+function normalizeDecals(values){
+ if(!Array.isArray(values))return [];
+ const number=(v,f,min,max)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):f;
+ return values.slice(0,6).filter(v=>v&&normalizeDecal(v.image)).map(v=>({image:normalizeDecal(v.image),surface:DECAL_SURFACES.some(([id])=>id===v.surface)?v.surface:'turret-right',x:number(v.x,0,-4,4),y:number(v.y,0,-4,4),size:number(v.size,.75,.15,3),rotation:number(v.rotation,0,-180,180)}));
+}
+function normalizeAppearance(value={},tankId='pz4f2'){
+ const v=value&&typeof value==='object'?value:{},nation=getTank(tankId).nation;
+ const color=(x,fallback)=>typeof x==='string'&&/^#[0-9a-f]{6}$/i.test(x)?x.toLowerCase():fallback;
+ return {base:color(v.base,nation==='de'?'#8e8c6b':nation==='us'?'#68705a':'#60705b'),secondary:color(v.secondary,'#3e4c37'),pattern:CAMOUFLAGES.some(([id])=>id===v.pattern)?v.pattern:'factory',number:typeof v.number==='string'?v.number.replace(/\D/g,'').slice(0,4):nation==='de'?'214':nation==='us'?'32':'108',stowage:v.stowage===true,sandbags:v.sandbags===true,foliage:v.foliage===true,decal:normalizeDecal(v.decal),decals:normalizeDecals(Array.isArray(v.decals)?v.decals:normalizeDecal(v.decal)?[{image:v.decal}]:[])};
+}
+function normalizeAppearances(values){const out={};if(!values||typeof values!=='object'||Array.isArray(values))return out;for(const t of TANKS)if(Object.hasOwn(values,t.id))out[t.id]=normalizeAppearance(values[t.id],t.id);return out;}
+
+return {CAMOUFLAGES,MAX_DECAL_LENGTH,normalizeDecal,importTankImage,DECAL_SURFACES,normalizeDecals,normalizeAppearance,normalizeAppearances};
+})();
+MODULES["workshop.js"]=(()=>{
+const {normalizeDecals} = MODULES["appearance.js"];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const copy=v=>JSON.parse(JSON.stringify(v));
+class WorkshopEditor {
+ constructor({canvas,renderer,getDraft,onChange}){
+  Object.assign(this,{canvas,renderer,getDraft,onChange,selected:-1,drag:null,history:[],future:[],placing:false});
+  this.root=canvas.parentElement;
+  this.ui=document.createElement('div');this.ui.className='workshop-tools';
+  this.ui.innerHTML=`<div class="workshop-camera" aria-label="Pohled na tank">${[['front','Čelo'],['back','Záď'],['left','Levý bok'],['right','Pravý bok'],['top','Shora'],['reset','Celý tank']].map(([id,label])=>`<button data-camera="${id}">${label}</button>`).join('')}<button data-camera="closer" aria-label="Přiblížit tank">＋</button><button data-camera="farther" aria-label="Oddálit tank">−</button></div><div class="workshop-selection"><strong id="decal-selection-label">Vyber nálepku přímo na tanku</strong><div><button data-edit="place">Umístit kliknutím</button><button data-edit="duplicate">Duplikovat</button><button data-edit="delete">Smazat</button><button data-edit="undo">↶ Zpět</button><button data-edit="redo">↷ Znovu</button></div></div><div class="workshop-help">Nálepka: klikni a táhni · rohy: velikost · horní úchyt: otočení<br>Pravé tlačítko / prázdné místo: otáčení pohledu · kolečko: přiblížení</div><div class="decal-gizmo" hidden><span class="decal-rotate-line"></span><button data-handle="rotate" aria-label="Otočit vybranou nálepku">↻</button>${['nw','ne','sw','se'].map(id=>`<button data-handle="${id}" aria-label="Změnit velikost nálepky — ${id}"></button>`).join('')}</div>`;
+  this.root.append(this.ui);this.gizmo=this.ui.querySelector('.decal-gizmo');
+  this.ui.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.camera){const id=b.dataset.camera;if(id==='closer'||id==='farther')this.zoom(id==='closer'?-140:140);else renderer.workshopView(id);}if(b.dataset.edit)this.action(b.dataset.edit);});
+  this.ui.addEventListener('pointerdown',e=>{if(e.target.dataset.handle)this.down(e,e.target.dataset.handle);});
+  canvas.addEventListener('pointerdown',e=>{if(this.active())this.down(e);});
+  window.addEventListener('pointermove',e=>{if(this.active())this.move(e);});
+  window.addEventListener('pointerup',e=>{if(this.drag?.id===e.pointerId)this.finish();});
+  window.addEventListener('pointercancel',()=>this.cancel());window.addEventListener('blur',()=>this.cancel());
+  canvas.addEventListener('wheel',e=>{if(!this.active())return;e.preventDefault();this.zoom(e.deltaY);},{passive:false});
+  document.addEventListener('keydown',e=>{if(!this.active()||e.target.matches('input,select,textarea'))return;
+   if((e.ctrlKey||e.metaKey)&&e.code==='KeyZ'){e.preventDefault();this.action(e.shiftKey?'redo':'undo');}
+   else if(e.code==='Delete'||e.code==='Backspace'){e.preventDefault();this.action('delete');}
+   else if(e.code==='Escape'&&this.drag){e.preventDefault();e.stopImmediatePropagation();this.cancel();}
+  },true);
+ }
+ active(){return !!this.getDraft()&&!this.root.closest('[hidden]');}
+ open(){this.history=[];this.future=[];this.selected=-1;this.drag=null;this.placing=false;this.renderer.workshopView('reset');this.update();}
+ close(){this.cancel();this.selected=-1;this.gizmo.hidden=true;}
+ beforeChange(){this.before=copy(this.getDraft()?.decals||[]);}
+ commit(){const decals=this.getDraft()?.decals;if(this.before&&JSON.stringify(this.before)!==JSON.stringify(decals)){this.history.push(this.before);if(this.history.length>40)this.history.shift();this.future=[];}this.before=null;}
+ select(index){this.selected=index;this.placing=false;this.update();}
+ zoom(delta){const o=this.renderer.workshopOrbit??={yaw:.73,pitch:.32,distance:17};o.distance=clamp(o.distance*Math.exp(delta*.001),6,34);this.update();}
+ apply(){const draft=this.getDraft();draft.decal='';draft.decals=normalizeDecals(draft.decals);this.renderer.setWorkshopDecals(draft.decals);this.update();}
+ action(action){const draft=this.getDraft();if(!draft)return;
+  if(action==='undo'||action==='redo'){const source=action==='undo'?this.history:this.future,target=action==='undo'?this.future:this.history;if(!source.length)return;target.push(copy(draft.decals));draft.decals=source.pop();this.selected=Math.min(this.selected,draft.decals.length-1);this.apply();this.onChange();return;}
+  const d=draft.decals[this.selected];if(!d)return;
+  if(action==='place'){this.placing=!this.placing;this.update();return;}
+  this.beforeChange();
+  if(action==='duplicate'&&draft.decals.length<6){draft.decals.push({...d,x:clamp(d.x+.2,-4,4)});this.selected=draft.decals.length-1;}
+  if(action==='delete'){draft.decals.splice(this.selected,1);this.selected=Math.min(this.selected,draft.decals.length-1);}
+  this.apply();this.commit();this.onChange();
+ }
+ down(e,handle){if(e.button!==0&&e.button!==2)return;e.preventDefault();this.canvas.focus({preventScroll:true});
+  const draft=this.getDraft(),pick=handle?this.selected:this.renderer.pickWorkshopDecal(e.clientX,e.clientY);
+  if(e.button===0&&this.placing){const hit=this.renderer.workshopSurface(e.clientX,e.clientY);if(hit&&draft.decals[this.selected]){this.beforeChange();Object.assign(draft.decals[this.selected],hit);this.apply();this.commit();this.onChange();this.placing=false;}return;}
+  const mode=e.button===2?'orbit':handle?handle==='rotate'?'rotate':'scale':pick>=0?'move':'orbit';
+  if(pick>=0&&e.button===0)this.select(pick);else if(e.button===0&&!handle)this.select(-1);
+  const d=draft.decals[this.selected],bounds=d?this.renderer.workshopDecalBounds(this.selected):null,rect=this.canvas.getBoundingClientRect();
+  const cx=rect.left+(bounds?.cx||rect.width/2),cy=rect.top+(bounds?.cy||rect.height/2);
+  this.beforeChange();this.drag={id:e.pointerId,mode,x:e.clientX,y:e.clientY,start:d?copy(d):null,hit:this.renderer.workshopSurface(e.clientX,e.clientY),cx,cy,radius:Math.max(8,Math.hypot(e.clientX-cx,e.clientY-cy)),angle:Math.atan2(e.clientY-cy,e.clientX-cx),target:e.target};
+  e.target.setPointerCapture?.(e.pointerId);
+ }
+ move(e){const drag=this.drag;if(!drag||drag.id!==e.pointerId)return;e.preventDefault();const draft=this.getDraft(),d=draft.decals[this.selected];
+  if(drag.mode==='orbit'){const o=this.renderer.workshopOrbit;o.yaw-=(e.clientX-drag.x)*.008;o.pitch=clamp(o.pitch+(e.clientY-drag.y)*.008,-.06,1.5);drag.x=e.clientX;drag.y=e.clientY;return;}
+  if(!d)return;
+  if(drag.mode==='move'){const hit=this.renderer.workshopSurface(e.clientX,e.clientY);if(!hit)return;const same=hit.surface===drag.hit?.surface;d.surface=hit.surface;d.x=hit.x-(same?drag.hit.x-drag.start.x:0);d.y=hit.y-(same?drag.hit.y-drag.start.y:0);}
+  if(drag.mode==='scale')d.size=drag.start.size*Math.hypot(e.clientX-drag.cx,e.clientY-drag.cy)/drag.radius;
+  if(drag.mode==='rotate'){let delta=(Math.atan2(e.clientY-drag.cy,e.clientX-drag.cx)-drag.angle)*180/Math.PI;d.rotation=((drag.start.rotation-delta+540)%360)-180;if(e.shiftKey)d.rotation=Math.round(d.rotation/15)*15;}
+  this.apply();
+ }
+ finish(){if(!this.drag)return;const drag=this.drag;this.drag=null;try{drag.target.releasePointerCapture(drag.id);}catch{}this.commit();this.onChange();}
+ cancel(){if(!this.drag)return;const before=this.before,drag=this.drag;this.drag=null;this.before=null;try{drag.target.releasePointerCapture(drag.id);}catch{}if(before&&this.getDraft()){this.getDraft().decals=before;this.apply();this.onChange();}}
+ update(){if(!this.active())return;const draft=this.getDraft();if(this.selected>=draft.decals.length)this.selected=-1;
+  const selected=draft.decals[this.selected],b=selected?this.renderer.workshopDecalBounds(this.selected):null;
+  this.gizmo.hidden=!b;if(b)Object.assign(this.gizmo.style,{left:b.left+'px',top:b.top+'px',width:b.width+'px',height:b.height+'px'});
+  this.ui.querySelector('#decal-selection-label').textContent=this.placing?'Klikni na pancíř pro nové umístění':selected?'Nálepka '+(this.selected+1)+' · '+Math.round(selected.size*100)+' cm · '+Math.round(selected.rotation)+'°':'Vyber nálepku přímo na tanku';
+  for(const button of this.ui.querySelectorAll('[data-edit]')){const action=button.dataset.edit;button.disabled=action==='undo'?!this.history.length:action==='redo'?!this.future.length:!selected||(action==='duplicate'&&draft.decals.length>=6);button.classList.toggle('active',action==='place'&&this.placing);}
+  for(const card of document.querySelectorAll('.decal-editor'))card.classList.toggle('selected',Number(card.dataset.decalCard)===this.selected);
+ }
+}
+
+return {WorkshopEditor};
+})();
 MODULES["ballistics.js"]=(()=>{
 const { getTank, surfaceHeight } = MODULES["data.js"];
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -55519,41 +55629,6 @@ function specName(t) {const s=getTank(t.type);return `${s.name} ${s.variant}`;}
 
 return {Game};
 })();
-MODULES["appearance.js"]=(()=>{
-const {TANKS,getTank} = MODULES["data.js"];
-const CAMOUFLAGES=[['factory','Původní nátěr'],['plain','Jednobarevný'],['patches','Skvrnitý'],['stripes','Pruhovaný'],['digital','Digitální']];
-const MAX_DECAL_LENGTH=120000;
-function normalizeDecal(value){return typeof value==='string'&&value.length<=MAX_DECAL_LENGTH&&/^data:image\/(png|webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/.test(value)?value:'';}
-function importTankImage(file){return (async()=>{
- if(!file||file.size>20*1024*1024)throw Error('Vyber obrázek do 20 MB.');
- const url=URL.createObjectURL(file),img=new Image();
- try{
-  img.src=url;await img.decode();
-  if(!img.naturalWidth||!img.naturalHeight||img.naturalWidth*img.naturalHeight>40000000)throw Error('Obrázek je příliš velký. Použij nejvýše 40 megapixelů.');
-  const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');
-  for(let size=512;size>=64;size/=2){
-   canvas.width=canvas.height=size;const scale=size/Math.max(img.naturalWidth,img.naturalHeight),w=img.naturalWidth*scale,h=img.naturalHeight*scale;
-   ctx.drawImage(img,(size-w)/2,(size-h)/2,w,h);
-   const data=canvas.toDataURL('image/webp',.85);if(data.length<=24000&&normalizeDecal(data))return data;
-  }
-  throw Error('Obrázek se nepodařilo zmenšit. Zkus jiný soubor.');
- }finally{URL.revokeObjectURL(url);}
-})();}
-const DECAL_SURFACES=[['turret-right','Věž · pravý bok'],['turret-left','Věž · levý bok'],['turret-back','Věž · zadní strana'],['hull-right','Korba · pravý bok'],['hull-left','Korba · levý bok'],['hull-front','Korba · čelo'],['hull-back','Korba · záď']];
-function normalizeDecals(values){
- if(!Array.isArray(values))return [];
- const number=(v,f,min,max)=>Number.isFinite(Number(v))?Math.max(min,Math.min(max,Number(v))):f;
- return values.slice(0,6).filter(v=>v&&normalizeDecal(v.image)).map(v=>({image:normalizeDecal(v.image),surface:DECAL_SURFACES.some(([id])=>id===v.surface)?v.surface:'turret-right',x:number(v.x,0,-1.5,1.5),y:number(v.y,0,-.6,.6),size:number(v.size,.75,.2,2),rotation:number(v.rotation,0,-180,180)}));
-}
-function normalizeAppearance(value={},tankId='pz4f2'){
- const v=value&&typeof value==='object'?value:{},nation=getTank(tankId).nation;
- const color=(x,fallback)=>typeof x==='string'&&/^#[0-9a-f]{6}$/i.test(x)?x.toLowerCase():fallback;
- return {base:color(v.base,nation==='de'?'#8e8c6b':nation==='us'?'#68705a':'#60705b'),secondary:color(v.secondary,'#3e4c37'),pattern:CAMOUFLAGES.some(([id])=>id===v.pattern)?v.pattern:'factory',number:typeof v.number==='string'?v.number.replace(/\D/g,'').slice(0,4):nation==='de'?'214':nation==='us'?'32':'108',stowage:v.stowage===true,sandbags:v.sandbags===true,foliage:v.foliage===true,decal:normalizeDecal(v.decal),decals:normalizeDecals(Array.isArray(v.decals)?v.decals:normalizeDecal(v.decal)?[{image:v.decal}]:[])};
-}
-function normalizeAppearances(values){const out={};if(!values||typeof values!=='object'||Array.isArray(values))return out;for(const t of TANKS)if(Object.hasOwn(values,t.id))out[t.id]=normalizeAppearance(values[t.id],t.id);return out;}
-
-return {CAMOUFLAGES,MAX_DECAL_LENGTH,normalizeDecal,importTankImage,DECAL_SURFACES,normalizeDecals,normalizeAppearance,normalizeAppearances};
-})();
 MODULES["zombies.js"]=(()=>{
 const {Game} = MODULES["simulation.js"];
 const {surfaceHeight} = MODULES["data.js"];
@@ -55802,28 +55877,30 @@ function addArmorDetails(hull,turret,paint,steel,dirt,width,length,h,nation){
 
 // Project each decal vertex onto the chosen armor surface so markings follow
 // sloped plates and curved turrets instead of floating beside the vehicle.
-function addCustomDecal(model,decal){
+function addCustomDecal(model,decal,index=0){
  const [part,side]=decal.surface.split('-'),parent=part==='turret'?model.turret:model.hull;
  model.group.updateMatrixWorld(true);
  const surfaces=[];parent.traverse(m=>{if(m.isMesh&&!m.isInstancedMesh&&!m.material.transparent)surfaces.push(m);});
- const direction=new THREE.Vector3(side==='right'?-1:side==='left'?1:0,0,side==='front'?-1:side==='back'?1:0);
- const horizontal=new THREE.Vector3(-direction.z,0,direction.x),center=new THREE.Vector3(0,part==='turret'?.57:(side==='front'||side==='back'?1.15:1.7),0);
- center.addScaledVector(horizontal,decal.x);center.y+=decal.y;
- const geo=new THREE.PlaneGeometry(decal.size,decal.size,12,12),vertices=geo.attributes.position,uv=geo.attributes.uv;
+ const direction=new THREE.Vector3(side==='right'?-1:side==='left'?1:0,side==='top'?-1:0,side==='front'?-1:side==='back'?1:0);
+ const horizontal=side==='top'?new THREE.Vector3(1,0,0):new THREE.Vector3(-direction.z,0,direction.x),vertical=side==='top'?new THREE.Vector3(0,0,-1):new THREE.Vector3(0,1,0),center=new THREE.Vector3(0,part==='turret'?.57:(side==='front'||side==='back'?1.15:1.7),0);
+ center.addScaledVector(horizontal,decal.x).addScaledVector(vertical,decal.y);
+ const geo=new THREE.PlaneGeometry(decal.size,decal.size,8,8),vertices=geo.attributes.position,uv=geo.attributes.uv;
  const ray=new THREE.Raycaster(),worldDirection=direction.clone().transformDirection(parent.matrixWorld),outward=direction.clone().negate(),angle=decal.rotation*Math.PI/180;
  const valid=[];
  for(let i=0;i<vertices.count;i++){
   const u=vertices.getX(i),v=vertices.getY(i),x=u*Math.cos(angle)-v*Math.sin(angle),y=u*Math.sin(angle)+v*Math.cos(angle);
-  const local=center.clone().addScaledVector(horizontal,x);local.y+=y;local.addScaledVector(outward,8);
+  const local=center.clone().addScaledVector(horizontal,x).addScaledVector(vertical,y).addScaledVector(outward,8);
   ray.set(parent.localToWorld(local.clone()),worldDirection);ray.far=16;
-  const hit=ray.intersectObjects(surfaces,false).find(h=>{const q=parent.worldToLocal(h.point.clone());return side==='right'?q.x>0:side==='left'?q.x<0:side==='front'?q.z>0:q.z<0;});valid[i]=!!hit;
+  const hit=ray.intersectObjects(surfaces,false).find(h=>{const q=parent.worldToLocal(h.point.clone());return side==='top'?q.y>0:side==='right'?q.x>0:side==='left'?q.x<0:side==='front'?q.z>0:q.z<0;});valid[i]=!!hit;
   const point=hit?parent.worldToLocal(hit.point.clone()).addScaledVector(outward,.018):center.clone();vertices.setXYZ(i,point.x,point.y,point.z);
  }
  const indices=[];for(let i=0;i<geo.index.count;i+=3){const ids=[geo.index.getX(i),geo.index.getX(i+1),geo.index.getX(i+2)];if(ids.every(k=>valid[k]))indices.push(...ids);}geo.setIndex(indices);geo.computeVertexNormals();
- const image=new Image(),texture=new THREE.Texture(image);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
+ model.decalMaterialCache??=new Map();let material=model.decalMaterialCache.get(decal.image);
+ if(!material){const image=new Image(),texture=new THREE.Texture(image);texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
  let disposed=false;texture.addEventListener('dispose',()=>{disposed=true;image.onload=null;});image.onload=()=>{if(!disposed)texture.needsUpdate=true;};image.src=decal.image;
- const material=new THREE.MeshStandardMaterial({map:texture,transparent:true,alphaTest:.03,depthWrite:false,side:THREE.DoubleSide,roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
- const mesh=new THREE.Mesh(geo,material);mesh.renderOrder=2;parent.add(mesh);
+ material=new THREE.MeshStandardMaterial({map:texture,transparent:true,alphaTest:.03,depthWrite:false,side:THREE.DoubleSide,roughness:1,polygonOffset:true,polygonOffsetFactor:-2});
+ model.decalMaterialCache.set(decal.image,material);}
+ const mesh=new THREE.Mesh(geo,material);mesh.userData.decalIndex=index;mesh.userData.decalKey=JSON.stringify(decal);mesh.userData.customDecal=true;mesh.renderOrder=2+index;parent.add(mesh);return mesh;
 }
 
 function makeTank(id,appearance){
@@ -55845,7 +55922,7 @@ function makeTank(id,appearance){
  if(a.sandbags)for(let row=0;row<2;row++)for(let i=0;i<5;i++)addMesh(accessories,BALL(),cloth,(i-2)*w*.15,h*.75+row*.2,l*.4-row*.12,.32,.16,.21);
  if(a.foliage)for(const side of [-1,1])for(let i=0;i<6;i++)addMesh(accessories,ROCK(),green,side*w*.39,h*.84+Math.sin(i)*.2,l*(.32-i*.12),.32,.22,.42);
  mergeStatic(accessories);for(const m of [cloth,green]){model.skinMaterials.push(m);model.originalColors.set(m,m.color.clone());}if(!a.stowage&&!a.sandbags)cloth.dispose();if(!a.foliage)green.dispose();
- for(const decal of a.decals)addCustomDecal(model,decal);
+ a.decals.forEach((decal,index)=>addCustomDecal(model,decal,index));
  return model;
 }
 function makeTankBase(id) {
@@ -56193,6 +56270,52 @@ class Renderer {
     this.camera.fov = 34; this.camera.position.set(10.5, 6.3, 11.8); this.camera.lookAt(0, 1.25, 0); this.resize();
   }
 
+
+  updateWorkshopCamera(){
+    const o=this.workshopOrbit??={yaw:.73,pitch:.32,distance:17};
+    this.camera.position.set(Math.sin(o.yaw)*Math.cos(o.pitch)*o.distance,1.5+Math.sin(o.pitch)*o.distance,Math.cos(o.yaw)*Math.cos(o.pitch)*o.distance);
+    this.camera.lookAt(0,1.5,0);this.camera.updateMatrixWorld(true);
+    this.hangarTank?.group.updateMatrixWorld(true);
+  }
+  workshopView(view){
+    const yaw=this.hangarYaw||0;
+    this.workshopOrbit={yaw:yaw+({front:0,back:Math.PI,left:-Math.PI/2,right:Math.PI/2,top:0,reset:.73-yaw}[view]??0),pitch:view==='top'?1.48:view==='reset'?.32:.16,distance:17};this.updateWorkshopCamera();
+  }
+  workshopRay(x,y){
+    this.updateWorkshopCamera();const rect=this.canvas.getBoundingClientRect(),ray=new THREE.Raycaster();ray.setFromCamera(new THREE.Vector2((x-rect.left)/rect.width*2-1,1-(y-rect.top)/rect.height*2),this.camera);return ray;
+  }
+  pickWorkshopDecal(x,y){
+    const hit=this.workshopRay(x,y).intersectObject(this.hangarTank.group,true).find(h=>h.object.isMesh&&!h.object.material?.wireframe&&(!h.object.material?.transparent||h.object.userData.customDecal));
+    return hit?.object.userData.customDecal?hit.object.userData.decalIndex:-1;
+  }
+  workshopSurface(x,y){
+    const model=this.hangarTank,hit=this.workshopRay(x,y).intersectObject(model.group,true).find(h=>h.object.isMesh&&!h.object.material?.transparent&&!h.object.isInstancedMesh);
+    if(!hit)return null;
+    let node=hit.object,part='hull';while(node){if(node===model.turret){part='turret';break;}node=node.parent;}
+    const parent=part==='turret'?model.turret:model.hull,point=parent.worldToLocal(hit.point.clone());
+    const normal=hit.face.normal.clone().applyNormalMatrix(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).transformDirection(parent.matrixWorld.clone().invert());
+    const side=normal.y>.65?'top':Math.abs(normal.x)>Math.abs(normal.z)?(normal.x>0?'right':'left'):(normal.z>0?'front':'back');
+    const xValue=side==='top'?point.x:side==='right'?-point.z:side==='left'?point.z:side==='front'?point.x:-point.x;
+    const base=part==='turret'?.57:(side==='front'||side==='back'?1.15:1.7);
+    return {surface:part+'-'+side,x:xValue,y:side==='top'?-point.z:point.y-base};
+  }
+  setWorkshopDecals(decals){
+    const model=this.hangarTank;if(!model)return;
+    const old=[];model.group.traverse(m=>{if(m.userData.customDecal)old.push(m);});for(const m of old){const next=decals[m.userData.decalIndex];if(!next||m.userData.decalKey!==JSON.stringify(next)){m.removeFromParent();m.geometry.dispose();}}
+    for(const [image,material] of model.decalMaterialCache||[])if(!decals.some(d=>d.image===image)){material.map.dispose();material.dispose();model.decalMaterialCache.delete(image);}
+    decals.forEach((d,i)=>{if(!old.some(m=>m.parent&&m.userData.decalIndex===i))addCustomDecal(model,d,i);});model.group.updateMatrixWorld(true);
+  }
+  workshopDecalBounds(index){
+    const model=this.hangarTank;let mesh;model?.group.traverse(m=>{if(m.userData.customDecal&&m.userData.decalIndex===index)mesh=m;});if(!mesh||!mesh.geometry.index.count)return null;
+    model.group.updateMatrixWorld(true);const rect=this.canvas.getBoundingClientRect(),points=[],pos=mesh.geometry.attributes.position;
+    for(const i of new Set(mesh.geometry.index.array)){const p=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(mesh.matrixWorld).project(this.camera);if(p.z>-1&&p.z<1)points.push({x:(p.x*.5+.5)*rect.width,y:(-p.y*.5+.5)*rect.height});}
+    if(!points.length)return null;const xs=points.map(p=>p.x),ys=points.map(p=>p.y),left=Math.min(...xs),top=Math.min(...ys),right=Math.max(...xs),bottom=Math.max(...ys);
+    // Hide handles on the far side, behind armor, or outside the viewport.
+    const cx=(left+right)/2,cy=(top+bottom)/2;if(cx<0||cy<0||cx>rect.width||cy>rect.height)return null;
+    const pick=this.pickWorkshopDecal(rect.left+cx,rect.top+cy);if(pick!==index)return null;
+    return {left,top,width:Math.max(18,right-left),height:Math.max(18,bottom-top),cx,cy};
+  }
+
   setBattle(game) {
     this.clearWorld(); this.mode = 'battle'; this.game = game; const map = game.map || getMap(game.mapId); this.map = map;
     const desert = map.biome === 'desert', winter = map.biome === 'winter';
@@ -56510,7 +56633,8 @@ class Renderer {
       }
       for (const [id, mesh] of this.shellMeshes) if (!activeShells.has(id)) { this.dynamic.remove(mesh); mesh.material.dispose(); this.shellMeshes.delete(id); }
     } else if (this.hangarTank) {
-      this.hangarTank.group.rotation.y = this.hangarYaw + Math.sin(this.clock * .13) * .055;
+      this.hangarTank.group.rotation.y = this.hangarYaw + (this.canvas.parentElement?.id==='custom-preview'?0:Math.sin(this.clock * .13)*.055);
+      if(this.canvas.parentElement?.id==='custom-preview')this.updateWorkshopCamera();
       this.setXray(this.hangarTank, !!options.xray, null);
     }
     this.updateEffects(dt); this.flash.intensity *= Math.exp(-dt * 19);
@@ -57008,6 +57132,7 @@ function bindMouseButtons(target, releaseTarget, onDown, onUp) {
 return {keyboardInput,bindMouseButtons};
 })();
 MODULES["app.js"]=(()=>{
+const {WorkshopEditor} = MODULES["workshop.js"];
 const {NATIONS,TANKS,MAPS,getTank,getMap,terrainAt,terrainHeight,surfaceHeight,riverCenter} = MODULES["data.js"];
 const {Game} = MODULES["simulation.js"];
 const {CAMOUFLAGES,normalizeAppearance,normalizeAppearances,importTankImage,DECAL_SURFACES} = MODULES["appearance.js"];
@@ -57020,7 +57145,7 @@ const STORAGE='iron-front-progress-v1', defaults={xp:0,unlocked:['pz4f2','m4a1',
 let progress;
 try{const p=JSON.parse(localStorage.getItem(STORAGE)||'null');progress={...structuredClone(defaults),...p,settings:{...defaults.settings,...p?.settings}};progress.unlocked=[...new Set([...defaults.unlocked,...(Array.isArray(p?.unlocked)?p.unlocked.filter(id=>TANKS.some(t=>t.id===id)):[])])];progress.xp=Math.max(0,Math.floor(Number(progress.xp)||0));if(!progress.unlocked.includes(progress.selected))progress.selected='pz4f2';if(!MAPS.some(m=>m.id===progress.map))progress.map='valley';progress.nation=getTank(progress.selected).nation;}catch{progress=structuredClone(defaults)}
 progress.appearances=normalizeAppearances(progress.appearances);
-let customDraft=null,customPreviewTimer,imageImportVersion=0;
+let customDraft=null,customPreviewTimer,imageImportVersion=0,workshopEditor=null;
 let game=null,renderer=null,paused=false,awardDone=false,lastTime=performance.now(),lastHud=0,modalView='',toastTimer,noticeTimer,flashTimer,feed=[],pointer={x:innerWidth*.5,y:innerHeight*.5,down:false,right:false},keys=new Set(),returnFocus=null;
 let killConfirmTimer;
 let ignoreMouseMove=true,fireRequested=false,mgRequested=false,touchCannon=false,scope=false,touchAim=false,lockUnavailable=false,lockPending=false,lastUnlock=-1000,lastAim=null;
@@ -57076,14 +57201,14 @@ function showResearch(focusId){
  openModal('research',`<span class="eyebrow">TECHNOLOGIE / VÝZKUMNÝ STROM</span><h2>Další stroj je na dosah.</h2><p class="modal-intro">Tři národy, tři vývojové linie. Bojuj, obsazuj a proměň výzkumné body v nové tanky. Základní stroj každého národa máš hned. Body můžeš využít v libovolné větvi.</p><div class="balance">✦ ${num(progress.xp)} VB <span class="eyebrow" style="display:inline;margin-left:18px">${progress.battles} BITEV · ${progress.wins} VÍTĚZSTVÍ</span></div><div class="research-grid">${NATIONS.map(n=>`<section class="research-column"><h3>${flag(n.id)}${n.name.toUpperCase()}</h3>${cards(n.id)}</section>`).join('')}</div><p class="modal-intro">Nový tank vychází přibližně na dvě aktivně odehrané bitvy. Výdělek závisí na výsledku, zásazích a obsazování. Nic se nezkoumá na čas.</p>`)
 }
 function showCustomization(){
- if(game||!renderer)return;customDraft=normalizeAppearance(progress.appearances[progress.selected],progress.selected);$('#workshop').hidden=false;$('#hangar').hidden=true;$('#custom-preview').append(canvas);renderCustomizationForm();previewCustomization();$('#custom-title').textContent=fullName(getTank(progress.selected));$('#custom-cancel').focus();
+ if(game||!renderer)return;customDraft=normalizeAppearance(progress.appearances[progress.selected],progress.selected);$('#workshop').hidden=false;$('#hangar').hidden=true;$('#custom-preview').append(canvas);renderCustomizationForm();previewCustomization();workshopEditor??=new WorkshopEditor({canvas,renderer,getDraft:()=>customDraft,onChange:()=>renderCustomizationForm()});workshopEditor.open();$('#custom-title').textContent=fullName(getTank(progress.selected));$('#custom-cancel').focus();
 }
 function renderCustomizationForm(){
- $('#custom-form').innerHTML=`<label>Kamufláž<select id="custom-pattern">${CAMOUFLAGES.map(([id,name])=>`<option value="${id}" ${customDraft.pattern===id?'selected':''}>${name}</option>`).join('')}</select></label><div class="custom-colors"><label>Základní barva<input id="custom-base" type="color" value="${customDraft.base}"></label><label>Druhá barva<input id="custom-secondary" type="color" value="${customDraft.secondary}"></label></div><label>Číslo tanku<input id="custom-number" type="text" inputmode="numeric" maxlength="4" value="${customDraft.number}" placeholder="Bez čísla"></label><p class="custom-note">Číslo má až 4 číslice. Změnou barvy se původní nátěr přepne na jednobarevný.</p><fieldset><legend>Vlastní nálepky · ${customDraft.decals.length}/6</legend><label>Přidat obrázek<input id="custom-image" type="file" accept="image/*" ${customDraft.decals.length>=6?'disabled':''}></label><p class="custom-note">Až 6 obrázků. U každého vyber část tanku, posun, velikost a otočení. Soubory do 20 MB zůstávají na tvém zařízení.</p>${customDraft.decals.map((d,i)=>`<div class="decal-editor"><strong>Nálepka ${i+1}</strong><img class="custom-decal-preview" src="${d.image}" alt="Nálepka ${i+1}"><label>Umístění<select data-decal="${i}" data-field="surface">${DECAL_SURFACES.map(([id,label])=>`<option value="${id}" ${d.surface===id?'selected':''}>${label}</option>`).join('')}</select></label>${[['x','Vodorovný posun',-1.5,1.5,.05],['y','Svislý posun',-.6,.6,.05],['size','Velikost',.2,2,.05],['rotation','Otočení',-180,180,5]].map(([key,label,min,max,step])=>`<label>${label}<input aria-label="${label} nálepky ${i+1}" data-decal="${i}" data-field="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${d[key]}"></label>`).join('')}<button type="button" class="text-button" data-remove-decal="${i}">Odstranit nálepku ${i+1}</button></div>`).join('')}<p id="custom-image-status" role="status"></p></fieldset><fieldset><legend>Doplňky</legend>${[['stowage','Brašny a zavazadla'],['sandbags','Pytle s pískem'],['foliage','Maskovací větve']].map(([id,label])=>`<label class="custom-check"><input type="checkbox" id="custom-${id}" ${customDraft[id]?'checked':''}>${label}</label>`).join('')}</fieldset>`;
+ $('#custom-form').innerHTML=`<label>Kamufláž<select id="custom-pattern">${CAMOUFLAGES.map(([id,name])=>`<option value="${id}" ${customDraft.pattern===id?'selected':''}>${name}</option>`).join('')}</select></label><div class="custom-colors"><label>Základní barva<input id="custom-base" type="color" value="${customDraft.base}"></label><label>Druhá barva<input id="custom-secondary" type="color" value="${customDraft.secondary}"></label></div><label>Číslo tanku<input id="custom-number" type="text" inputmode="numeric" maxlength="4" value="${customDraft.number}" placeholder="Bez čísla"></label><p class="custom-note">Číslo má až 4 číslice. Změnou barvy se původní nátěr přepne na jednobarevný.</p><fieldset><legend>Vlastní nálepky · ${customDraft.decals.length}/6</legend><label>Přidat obrázek<input id="custom-image" type="file" accept="image/*" ${customDraft.decals.length>=6?'disabled':''}></label><p class="custom-note">Klikni na nálepku na tanku a přetáhni ji. Rohové úchyty mění velikost, kulatý úchyt otáčí. Až 6 obrázků. Soubory do 20 MB zůstávají na tvém zařízení.</p>${customDraft.decals.map((d,i)=>`<div class="decal-editor" data-decal-card="${i}"><strong>Nálepka ${i+1}</strong><button type="button" class="decal-pick" data-select-decal="${i}" aria-label="Vybrat nálepku ${i+1} na tanku"><img class="custom-decal-preview" src="${d.image}" alt="Nálepka ${i+1}"></button><details><summary>Přesné nastavení</summary><label>Umístění<select data-decal="${i}" data-field="surface">${DECAL_SURFACES.map(([id,label])=>`<option value="${id}" ${d.surface===id?'selected':''}>${label}</option>`).join('')}</select></label>${[['x','Vodorovný posun',-4,4,.05],['y','Svislý posun',-4,4,.05],['size','Velikost',.15,3,.05],['rotation','Otočení',-180,180,5]].map(([key,label,min,max,step])=>`<label>${label}<input aria-label="${label} nálepky ${i+1}" data-decal="${i}" data-field="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${d[key]}"></label>`).join('')}</details><button type="button" class="text-button" data-remove-decal="${i}">Odstranit nálepku ${i+1}</button></div>`).join('')}<p id="custom-image-status" role="status"></p></fieldset><fieldset><legend>Doplňky</legend>${[['stowage','Brašny a zavazadla'],['sandbags','Pytle s pískem'],['foliage','Maskovací větve']].map(([id,label])=>`<label class="custom-check"><input type="checkbox" id="custom-${id}" ${customDraft[id]?'checked':''}>${label}</label>`).join('')}</fieldset>`;
 }
 function previewCustomization(){if(!customDraft)return;const yaw=renderer.hangarYaw;renderer.setHangar(progress.selected,customDraft);renderer.hangarYaw=yaw;renderer.resize();}
 function closeCustomization(commit){
- if(!customDraft)return;clearTimeout(customPreviewTimer);if(commit){progress.appearances[progress.selected]=normalizeAppearance(customDraft,progress.selected);renderer.appearances=progress.appearances;if(save())toast('Vzhled tanku uložen. Použije se i v bitvě.');}imageImportVersion++;$('#custom-save').disabled=false;customDraft=null;$('#workshop').hidden=true;$('#hangar').hidden=false;hero.prepend(canvas);renderer.setHangar(progress.selected);renderer.resize();$('#customize-button').focus();
+ if(!customDraft)return;workshopEditor?.finish();workshopEditor?.close();clearTimeout(customPreviewTimer);if(commit){progress.appearances[progress.selected]=normalizeAppearance(customDraft,progress.selected);renderer.appearances=progress.appearances;if(save())toast('Vzhled tanku uložen. Použije se i v bitvě.');}imageImportVersion++;$('#custom-save').disabled=false;customDraft=null;$('#workshop').hidden=true;$('#hangar').hidden=false;hero.prepend(canvas);renderer.setHangar(progress.selected);renderer.resize();$('#customize-button').focus();
 }
 $('#custom-form').addEventListener('input',e=>{
  if(!customDraft)return;if(e.target.dataset.decal!==undefined){const decal=customDraft.decals[Number(e.target.dataset.decal)];if(decal){decal[e.target.dataset.field]=e.target.dataset.field==='surface'?e.target.value:Number(e.target.value);clearTimeout(customPreviewTimer);customPreviewTimer=setTimeout(previewCustomization,70);}return;}const key=e.target.id.replace('custom-','');if(!['base','secondary','number','pattern','stowage','sandbags','foliage'].includes(key))return;customDraft[key]=e.target.type==='checkbox'?e.target.checked:e.target.value;
@@ -57097,7 +57222,7 @@ $('#custom-form').addEventListener('change',async e=>{
  try{
   const decal=await importTankImage(file);
   if(version!==imageImportVersion||!customDraft)return;
-  if(customDraft.decals.length>=6)throw Error('Na tank lze přidat nejvýše 6 nálepek.');customDraft.decal='';customDraft.decals.push({image:decal,surface:'turret-right',x:0,y:0,size:.75,rotation:0});renderCustomizationForm();previewCustomization();$('#custom-image-status').textContent='Obrázek je připraven. Potvrď Uložit vzhled.';
+  if(customDraft.decals.length>=6)throw Error('Na tank lze přidat nejvýše 6 nálepek.');workshopEditor?.beforeChange();customDraft.decal='';customDraft.decals.push({image:decal,surface:'turret-right',x:0,y:0,size:.75,rotation:0});renderCustomizationForm();previewCustomization();workshopEditor?.commit();workshopEditor?.select(customDraft.decals.length-1);renderer.workshopView('right');$('#custom-image-status').textContent='Táhni obrázek přímo po tanku. Úchyty mění velikost a otočení.';
  }catch(error){if(version===imageImportVersion&&customDraft)$('#custom-image-status').textContent=error.message.includes('decode')?'Obrázek nelze načíst. Zkus PNG, JPG nebo WebP.':error.message;}
  finally{if(version===imageImportVersion){$('#custom-save').disabled=false;e.target.value='';}}
 });
@@ -57123,7 +57248,7 @@ function drawTags(){
 }
 
 document.addEventListener('click',e=>{const b=e.target.closest('button,a.brand');if(!b)return;if(b.matches('.brand')){e.preventDefault();if(!game)closeModal();return}if(b.dataset.view){if(b.dataset.view==='hangar')closeModal();if(b.dataset.view==='research')showResearch();if(b.dataset.view==='guide')showGuide();}if(b.dataset.nation){progress.nation=b.dataset.nation;const t=TANKS.find(t=>t.nation===progress.nation&&progress.unlocked.includes(t.id));selectTank(t.id)}if(b.dataset.tank)selectTank(b.dataset.tank);if(b.dataset.map){progress.map=b.dataset.map;save();renderHangar()}if(b.dataset.equip){selectTank(b.dataset.equip);closeModal()}if(b.dataset.unlock){const t=getTank(b.dataset.unlock);if(!progress.unlocked.includes(t.id)&&progress.xp>=t.cost&&(!t.requires||progress.unlocked.includes(t.requires))){progress.xp-=t.cost;progress.unlocked.push(t.id);save();showResearch(t.id);renderHangar();toast(`${fullName(t)} vyzkoumán. Připraven k nasazení.`)}}switch(b.dataset.action){case'close':case'resume':closeModal();break;case'abandon':{const r=game.abandon();finishBattle(r||game.finished);break}case'result-hangar':backToHangar();break;case'result-research':backToHangar(true);break;}
- if(b.dataset.removeDecal!==undefined&&customDraft){imageImportVersion++;$('#custom-save').disabled=false;customDraft.decal='';customDraft.decals.splice(Number(b.dataset.removeDecal),1);renderCustomizationForm();previewCustomization();}if(b.id==='customize-button')showCustomization();if(b.id==='custom-save')closeCustomization(true);if(b.id==='custom-cancel')closeCustomization(false);if(b.id==='custom-remove-image'){imageImportVersion++;$('#custom-save').disabled=false;customDraft.decal='';renderCustomizationForm();previewCustomization();}if(b.id==='custom-reset'){imageImportVersion++;$('#custom-save').disabled=false;customDraft=normalizeAppearance({},progress.selected);renderCustomizationForm();previewCustomization();}if(b.dataset.zupgrade){if(game?.buyUpgrade(b.dataset.zupgrade))showZombieShop();}if(b.id==='next-wave'){if(game?.nextWave())closeModal();}if(b.id==='nuke-button')game?.launchNuke();if(b.id==='play-button')startBattle();if(b.id==='close-modal')closeModal();if(b.id==='settings-button')showSettings();if(b.id==='pause-button')pause();if(b.id==='camera-mode-button'&&game&&!paused)scope=!scope;if(b.id==='repair-button')game?.repairPlayer();if(b.id==='smoke-button')game?.smokePlayer();if(b.id==='missile-button')game?.fireMissilePlayer();if(b.id==='respawn-button')respawn();if(b.id==='sound-toggle'){progress.settings.sound=!progress.settings.sound;audio.setEnabled(progress.settings.sound);audio.unlock().catch(()=>{});save();b.textContent=progress.settings.sound?'ZAPNUTO':'VYPNUTO'}if(b.id==='export-save'){const blob=new Blob([JSON.stringify({...progress,format:'iron-front-save-v1'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='iron-front-postup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Záloha postupu připravena.')}});
+ if(b.dataset.selectDecal!==undefined&&customDraft){workshopEditor.select(Number(b.dataset.selectDecal));renderer.workshopView(customDraft.decals[Number(b.dataset.selectDecal)].surface.split('-')[1]);}if(b.dataset.removeDecal!==undefined&&customDraft){imageImportVersion++;$('#custom-save').disabled=false;customDraft.decal='';customDraft.decals.splice(Number(b.dataset.removeDecal),1);renderCustomizationForm();previewCustomization();}if(b.id==='customize-button')showCustomization();if(b.id==='custom-save')closeCustomization(true);if(b.id==='custom-cancel')closeCustomization(false);if(b.id==='custom-remove-image'){imageImportVersion++;$('#custom-save').disabled=false;customDraft.decal='';renderCustomizationForm();previewCustomization();}if(b.id==='custom-reset'){imageImportVersion++;$('#custom-save').disabled=false;customDraft=normalizeAppearance({},progress.selected);renderCustomizationForm();previewCustomization();}if(b.dataset.zupgrade){if(game?.buyUpgrade(b.dataset.zupgrade))showZombieShop();}if(b.id==='next-wave'){if(game?.nextWave())closeModal();}if(b.id==='nuke-button')game?.launchNuke();if(b.id==='play-button')startBattle();if(b.id==='close-modal')closeModal();if(b.id==='settings-button')showSettings();if(b.id==='pause-button')pause();if(b.id==='camera-mode-button'&&game&&!paused)scope=!scope;if(b.id==='repair-button')game?.repairPlayer();if(b.id==='smoke-button')game?.smokePlayer();if(b.id==='missile-button')game?.fireMissilePlayer();if(b.id==='respawn-button')respawn();if(b.id==='sound-toggle'){progress.settings.sound=!progress.settings.sound;audio.setEnabled(progress.settings.sound);audio.unlock().catch(()=>{});save();b.textContent=progress.settings.sound?'ZAPNUTO':'VYPNUTO'}if(b.id==='export-save'){const blob=new Blob([JSON.stringify({...progress,format:'iron-front-save-v1'},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='iron-front-postup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('Záloha postupu připravena.')}});
 document.addEventListener('change',async e=>{if(e.target.id==='game-mode'){const zombie=e.target.value==='zombies';$('.mode-label strong').textContent=zombie?'ZOMBIE · PŘEŽITÍ':'NADVLÁDA';$('.mode-label small').textContent=zombie?'Vlny · šrot · vylepšení tanku':'3 zóny · 3,24 km² · 6 proti 6';$('.deploy-panel p').innerHTML=zombie?'Jeden tank proti hordě.<br>Každou vlnou silnější. Mezi vlnami obchod.':'<span id="matchup-label">Bitva národů</span><br>Obsaď zóny. Vybojuj další stroj.';}if(e.target.id==='sensitivity-select'){progress.settings.sensitivity=Number(e.target.value);save();}if(e.target.id==='quality-select'){progress.settings.quality=e.target.value;renderer?.setQuality(progress.settings.quality);save()}if(e.target.id==='import-save'){const f=e.target.files[0];if(!f)return;try{if(f.size>2500000)throw Error();const p=JSON.parse(await f.text());if(p.format!=='iron-front-save-v1'||!Array.isArray(p.unlocked)||!Number.isFinite(p.xp)||p.xp<0)throw Error();progress.unlocked=[...new Set([...defaults.unlocked,...p.unlocked.filter(id=>TANKS.some(t=>t.id===id))])];progress.xp=Math.floor(p.xp);progress.appearances=normalizeAppearances(p.appearances);if(renderer)renderer.appearances=progress.appearances;for(const k of ['battles','wins','kills'])progress[k]=Math.max(0,Math.floor(Number(p[k])||0));progress.selected=progress.unlocked.includes(p.selected)?p.selected:defaults.selected;progress.nation=getTank(progress.selected).nation;save();renderHangar();if(!game)renderer?.setHangar(progress.selected);showSettings();toast('Postup úspěšně obnoven.')}catch{toast('Soubor není platná záloha Iron Front.')}}});
 
 function respawn(){
@@ -57198,7 +57323,7 @@ canvas.addEventListener('pointerdown',e=>{
   }
 });
 bindMouseButtons(canvas,window,e=>{
-  if(e.sourceCapabilities?.firesTouchEvents)return;
+  if(customDraft||e.sourceCapabilities?.firesTouchEvents)return;
   audio.unlock().catch(()=>{});
   if(!game){if(e.button===2)pointer.right=true;return;}
   if(paused||game.finished)return;
@@ -57211,6 +57336,7 @@ bindMouseButtons(canvas,window,e=>{
 },e=>{if(e.button===0)pointer.down=false;if(e.button===2)pointer.right=false;});
 canvas.addEventListener('pointerenter',()=>{if(document.pointerLockElement!==canvas)ignoreMouseMove=true;});
 canvas.addEventListener('pointermove',e=>{
+  if(customDraft)return;
   if(!game){if(pointer.right)renderer?.rotateCamera(e.movementX,e.movementY);return;}
   if(paused||game.finished)return;
   if(e.pointerType==='touch'){touchAim=true;pointer.x=e.clientX;pointer.y=e.clientY;return;}
@@ -57219,7 +57345,7 @@ canvas.addEventListener('pointermove',e=>{
   renderer?.rotateCamera(e.movementX,e.movementY,{sensitivity:Number(progress.settings.sensitivity)||1});
 });
 window.addEventListener('pointercancel',clearControls);
-canvas.addEventListener('wheel',e=>{e.preventDefault();if(!paused)renderer?.zoom(e.deltaY,{scope});},{passive:false});
+canvas.addEventListener('wheel',e=>{e.preventDefault();if(customDraft)return;if(!paused)renderer?.zoom(e.deltaY,{scope});},{passive:false});
 window.addEventListener('blur',()=>{clearControls();if(game&&!paused&&!game.finished)pause();});
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&game&&!paused&&!game.finished)pause();});
 window.addEventListener('resize',()=>renderer?.resize());
@@ -57248,7 +57374,7 @@ function loop(now){
       }
       view.viewUpdated=true;
     }
-    renderer.render(paused?0:dt,game,view);
+    renderer.render(paused?0:dt,game,view);if(customDraft)workshopEditor?.update();
     audio.update(paused?null:game,dt);
     if(game){
       const rect=canvas.getBoundingClientRect(),reticle=$('#reticle'),marker=$('#gun-marker');
